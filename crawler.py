@@ -15,10 +15,14 @@ class HREFParser(HTMLParser):
     Parser that extracts hrefs
     """
     hrefs = set()
+
     def handle_starttag(self, tag, attrs):
         if tag == 'a':
             dict_attrs = dict(attrs)
-            if dict_attrs.get('href') and ("pdf" not in dict_attrs['href']) and ("jpg" not in dict_attrs['href']) and ("png" not in dict_attrs['href']):
+            if dict_attrs.get('href') and (
+                    "pdf" not in dict_attrs['href']) and (
+                        "jpg" not in dict_attrs['href']) and (
+                            "png" not in dict_attrs['href']):
                 self.hrefs.add(dict_attrs['href'])
 
 
@@ -36,9 +40,9 @@ def get_local_links(html, domain):
             # purposefully using path, no query, no hash
             hrefs.add(u_parse.path)
         else:
-          # only keep the local urls
-          if u_parse.netloc == domain:
-            hrefs.add(u_parse.path)
+            # only keep the local urls
+            if u_parse.netloc == domain:
+                hrefs.add(u_parse.path)
     return hrefs
 
 
@@ -46,6 +50,7 @@ class CrawlerCache(object):
     """
     Crawler data caching per relative URL and domain.
     """
+
     def __init__(self, db_file):
         self.conn = sqlite3.connect(db_file)
         c = self.conn.cursor()
@@ -59,14 +64,15 @@ class CrawlerCache(object):
         store the content for a given domain and relative url
         """
         self.cursor.execute("INSERT INTO sites VALUES (?,?,?)",
-            (domain, url, data))
+                            (domain, url, data))
         self.conn.commit()
 
     def get(self, domain, url):
         """
         return the content for a given domain and relative url
         """
-        self.cursor.execute("SELECT content FROM sites WHERE domain=? and url=?",
+        self.cursor.execute(
+            "SELECT content FROM sites WHERE domain=? and url=?",
             (domain, url))
         row = self.cursor.fetchone()
         if row:
@@ -76,7 +82,7 @@ class CrawlerCache(object):
         """
         return all the URLS within a domain
         """
-        self.cursor.execute("SELECT url FROM sites WHERE domain=?", (domain,))
+        self.cursor.execute("SELECT url FROM sites WHERE domain=?", (domain, ))
         # could use fetchone and yield but I want to release
         # my cursor after the call. I could have create a new cursor tho.
         # ...Oh well
@@ -114,11 +120,11 @@ class Crawler(object):
     def get(self, url):
         page = None
         if self.is_cacheable(url):
-          page = self.cache.get(self.domain, url)
+            page = self.cache.get(self.domain, url)
         if page is None:
-          page = self.curl(url)
+            page = self.curl(url)
         else:
-          print("cached url... [{}] {}".format(self.domain, url))
+            print("cached url... [{}] {}".format(self.domain, url))
         return page
 
     def is_cacheable(self, url):
@@ -134,7 +140,7 @@ class Crawler(object):
                     html = self.get(url)
                     self.set(url, html)
                     n_urls = n_urls.union(get_local_links(html, self.domain))
-            self._crawl(n_urls, max_depth-1)
+            self._crawl(n_urls, max_depth - 1)
 
     def curl(self, url):
         """
