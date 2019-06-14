@@ -2,7 +2,6 @@
 # filename: crawler.py
 
 import sqlite3
-#import urllib2
 from urllib.request import urlopen
 from urllib.request import Request
 from urllib.request import HTTPError
